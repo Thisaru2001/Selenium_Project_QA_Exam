@@ -1,0 +1,261 @@
+1. Introduction
+1.1 Purpose of the Project
+A small online retail team requires a beginner-level automated smoke and regression suite for its demonstration shopping website, DemoBlaze. The purpose of this project is to design, develop and execute that suite using Java, Maven, Selenium WebDriver and TestNG. The suite confirms that customers can open the store, browse phone products, view product information, add products to the cart, remove an unwanted product and complete basic checkout validation.
+1.2 Scope of the Automation
+The automated solution covers the following functions of https://www.demoblaze.com/:
+Home-page title and PRODUCT STORE heading verification
+Phones category selection
+Samsung galaxy s6 product selection and price retrieval
+Add to cart action and JavaScript alert handling
+Cart product counting using findElements()
+Printing product names and prices using a loop
+Removing Nokia lumia 1520 and confirming Samsung galaxy s6 remains
+Cart total verification
+Valid purchase-form submission using fictitious test data
+Invalid purchase-form validation when mandatory details are missing
+1.3 Test Site and Data Policy
+Test site: https://www.demoblaze.com/
+Only fictitious test data is used. No real payment-card details or personal information are entered at any point.
+The site is a public demonstration site, so its data may change. Assumptions and any observed limitations are documented in Section 8.
+1.4 Learning Objectives Demonstrated
+This project demonstrates the ability to:
+Translate a web-testing scenario into clear automated test cases.
+Create and run a Java, Maven, Selenium WebDriver and TestNG project.
+Use reliable locators and interact correctly with web elements.
+Apply assertions to verify expected results.
+Use explicit waits instead of unnecessary fixed delays.
+Handle JavaScript alerts, collections of elements and cart content.
+Implement both a valid workflow and a simple invalid validation scenario.
+Close the browser safely and explain the completed code.
+2. Test Environment
+2.1 Software and Tool Versions
+2.2 Maven Dependencies
+The project is a Maven project. Selenium Java and TestNG are declared as dependencies in pom.xml.
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.demoblaze</groupId>
+    <artifactId>demoblaze-automation</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Selenium Java Dependency -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.20.0</version>
+        </dependency>
+        <!-- TestNG Dependency -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>7.10.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Maven Surefire Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+2.3 Environment Evidence
+￼
+3. Test Scenarios
+3.1 Scenario Summary
+Five automated scenarios are implemented in one TestNG test class. Each scenario is independent and starts from a fresh browser session.
+3.2 Detailed Test Cases
+TC01 - Home Page Smoke Test
+TC02 - Product Selection
+TC03 - Add to Cart
+TC04 - Cart Management
+TC05 - Checkout Validation
+3.3 Fictitious Checkout Test Data
+3.4 Requirement Coverage (Traceability)
+4. Project Design
+4.1 Project Structure
+The solution is a single Maven project. The structure follows the recommended layout for this assessment.
+4.2 Class Design
+4.3 Setup and Cleanup
+@BeforeMethod creates a new ChromeDriver, maximizes the window, creates the WebDriverWait and navigates to the base URL, so every test starts from a clean session with an empty cart. @AfterMethod(alwaysRun = true) quits the browser after every test, including tests that fail, which guarantees that no browser process is left running.
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+
+public class BaseTest {
+
+    protected WebDriver driver;
+    protected WebDriverWait wait;
+
+    // Reusable Data (Class-level constants)
+    protected static final String BASE_URL = "https://www.demoblaze.com/";
+    protected static final String PRODUCT_SAMSUNG = "Samsung galaxy s6";
+    protected static final String PRODUCT_NOKIA = "Nokia lumia 1520";
+    
+   protected static final String CHECKOUT_NAME = "Test Student";
+    protected static final String CHECKOUT_COUNTRY = "Sri Lanka";
+    protected static final String CHECKOUT_CITY = "Colombo";
+    protected static final String CHECKOUT_CARD = "4111111111111111";
+    protected static final String CHECKOUT_MONTH = "12";
+    protected static final String CHECKOUT_YEAR = "2027";
+
+    @BeforeMethod
+    public void setUp() {
+        // Setup Chrome driver
+        driver = new ChromeDriver();
+        
+       // Initialize explicit wait for 10 seconds
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        
+       // Maximize browser window
+        driver.manage().window().maximize();
+        
+       // Navigate to the base URL
+        driver.get(BASE_URL);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() {
+        // Safe cleanup of browser session
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+   
+   protected void takeScreenshot(String fileName) {
+        try {
+            File srcFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            File destFile = new File("screenshots/" + fileName + ".png");
+            Files.copy(srcFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Screenshot saved: " + destFile.getPath());
+        } catch (IOException e) {
+            System.out.println("Failed to save screenshot: " + e.getMessage());
+        }
+    }
+}
+
+4.4 Reusable Data
+The base URL and repeated test data are defined once as class-level constants so that they can be changed in a single place.
+5. Locator Strategy
+5.1 Approach
+Locators were chosen so that they are readable, unique and unlikely to break when the page layout changes.
+id is used wherever an element has a unique id, because it is the fastest and most stable strategy.
+linkText is used for simple navigation links whose visible text is unique.
+Relative XPath with text or attributes (normalize-space(), contains(), @id, @class) is used for all other elements. Absolute XPath and position-based indexes are avoided because they break easily.
+5.2 Locators Used
+Figure 4: An XPath and an id locator highlighted in Chrome DevTools
+Listing 4: Locator declarations (By objects / XPath strings) in the test class
+6. Implementation
+6.1 Browser Control
+Chrome is opened through Selenium WebDriver, maximized and pointed at the base URL. The session is always closed with driver.quit() in the cleanup method, which ends the whole browser session and the driver process (close() would only close the current window).
+Listing 5: Opening, maximizing and quitting Chrome
+6.2 Explicit Waits
+Explicit waits (WebDriverWait with ExpectedConditions) are used instead of Thread.sleep(). A fixed sleep always pauses for the full time, wasting time when the page is fast and still failing when the page is slower than expected. An explicit wait polls until the condition is true or the timeout expires, then continues immediately.
+Listing 6: Explicit wait for an element (WebDriverWait + ExpectedConditions)
+Listing 7: Explicit wait for a JavaScript alert
+6.3 Element Actions
+Listing 8: Filling the order form with sendKeys() and clicking Purchase
+6.4 JavaScript Alert Handling
+After clicking Add to cart, the site shows a JavaScript alert. The test waits for the alert with alertIsPresent(), switches to it with driver.switchTo().alert(), prints its text with getText(), verifies the message and closes it with accept(). The same technique is used for the checkout validation alert in TC05.
+Listing 9: Waiting for, reading and accepting a JavaScript alert
+Figure 5: The Product added alert shown during TC03
+6.5 Collections and Loops
+findElement() returns a single WebElement and throws NoSuchElementException if nothing matches, whereas findElements() returns a List<WebElement> that is empty when nothing matches. In TC04, findElements() collects the cart rows so that they can be counted with size() and processed with a loop that prints each product name and price.
+Listing 10: Counting cart rows with findElements() and printing names and prices in a loop
+6.6 Assertions
+Listing 11: Examples of TestNG assertions from the test class
+6.7 Invalid (Negative) Validation
+TC05 first submits the order form with Name and Credit card left empty and verifies that the site rejects the purchase with a validation alert. Only after this negative check is the same form completed with the fictitious data and submitted successfully.
+Listing 12: Negative validation for missing Name and Credit card details
+6.8 Code Quality
+Meaningful class, method and variable names (e.g. verifyCartManagement, cartRows, samsungPrice).
+Simple explanatory comments above each logical step.
+Base URL and repeated test data stored in class-level constants.
+Guaranteed cleanup with @AfterMethod(alwaysRun = true).
+7. Test Execution
+7.1 How the Tests Were Executed
+All five scenarios were executed with TestNG using [IDE run configuration / mvn clean test]. Results, console output and screenshots were retained as evidence.
+7.2 Execution Summary
+7.3 TestNG Results
+Figure 6: TestNG results panel showing all five tests
+Figure 7: TestNG HTML report (index.html or emailable-report.html)
+7.4 Console Output
+Listing 13: Console output showing the printed price, alert text, cart rows, product names and total
+7.5 Scenario Screenshots
+Figure 8: TC01: home page with the PRODUCT STORE heading
+Figure 9: TC02: Samsung galaxy s6 product page with heading and price
+Figure 10: TC03: JavaScript alert after Add to cart
+Figure 11: TC04: cart showing Samsung galaxy s6 and Nokia lumia 1520 before removal
+Figure 12: TC04: cart showing only Samsung galaxy s6 and the total
+Figure 13: TC05 Part A: validation alert for missing Name / Credit card
+Figure 14: TC05 Part B: Thank you for your purchase! confirmation
+8. Issues and Limitations
+8.1 Public-Site Changes
+DemoBlaze is a public demonstration site. Product names, prices, page text and alert wording may change without notice, and the site may be slow or temporarily unavailable. To reduce this risk, prices are read from the page instead of being hard-coded, alert assertions use the key phrase with contains(), and locators are based on ids and visible text. Observed changes: [Describe any change you noticed, or write "None observed"].
+8.2 Timing Issues
+The site loads product lists and cart rows dynamically. Clicking or reading elements too early can cause failures such as NoSuchElementException, ElementClickInterceptedException or NoAlertPresentException. These are prevented by explicit waits instead of fixed delays. Observed timing problems: [Describe or write "None observed"].
+8.3 Assumptions
+The DemoBlaze site is available and reachable during execution.
+Each test starts in a new Chrome session, so the cart is empty at the start of every test. [Confirm during execution]
+Product names Samsung galaxy s6 and Nokia lumia 1520 exist in the Phones category.
+Prices are read from the site at run time; expected values are not hard-coded.
+Alert and confirmation wording may vary slightly, so the key phrase is verified.
+Only fictitious data is used for checkout; no real payment is made.
+Chrome is the only browser tested, and tests are independent of each other.
+[Add any further assumption you made]
+8.4 Issue Encountered and Resolution
+The assessment requires one issue encountered during development and how it was resolved to be explained in the recorded demonstration and viva.
+Figure 15: Error message or failing test and the corrected result
+8.5 Limitations
+The project covers foundational Selenium concepts only; no Page Object Model, CI/CD, database, API or performance testing.
+Tests run on Chrome only and depend on a public website that is outside the tester's control.
+Orders placed on the demo site cannot be cleaned up or verified in a back-end system.
+[Add any further limitation you observed]
+9. Conclusion
+This project delivered a Selenium Java automation suite for the DemoBlaze web store using Maven and TestNG. The five automated scenarios cover the home-page smoke test, product selection and price retrieval, add to cart with JavaScript alert handling, cart management with findElements() and a loop, and checkout validation with both an invalid and a valid submission.
+Explicit waits were used for elements and alerts, reliable XPath and id / linkText locators were applied, assertions verified titles, headings, URLs, alert messages, cart contents and success states, and @AfterMethod(alwaysRun = true) guaranteed that the browser was closed after every test.
+In the final execution [X of 5] tests passed. [Write 2-3 sentences in your own words about what you learned, the main challenge and what you would improve in future work.]
+Appendices
+Appendix A - Source Code Extracts
+Listing 14: Complete pom.xml
+Listing 15: Complete BaseTest.java
+Listing 16: DemoBlazeTests.java - first part
+Listing 17: DemoBlazeTests.java - second part
+Listing 18: README with setup instructions, assumptions and execution steps
+Appendix B - Additional Evidence
+Figure 16: The screenshots/ folder containing the saved execution evidence
+Figure 17: testng-results.xml or any additional evidence
+Appendix C - References
+Selenium documentation: https://www.selenium.dev/documentation/
+TestNG documentation: https://testng.org/
+Apache Maven: https://maven.apache.org/
+DemoBlaze demonstration site: https://www.demoblaze.com/
+[Add any other reference you used]
+Project Links
